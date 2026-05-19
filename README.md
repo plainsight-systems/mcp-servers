@@ -9,11 +9,13 @@ The goal is to improve client productivity by giving agents direct access to tru
 crates/
   mcp-common/       Shared library (Redis, LanceDB, serialization utilities)
   cpp-guidelines/   C++ Core Guidelines MCP server
+  cpp-perf-guidelines/ Low-level C++ Performance Guidelines MCP server
   rust-api-guidelines/ Rust API Guidelines MCP server
   llm-proxy/        Local OpenAI-compatible proxy MCP server
   nodejs-guidelines/ Node.js Best Practices MCP server
 data/                Local data directory (not committed)
   cpp-guidelines/    Cloned C++ Core Guidelines repository
+  cpp-perf-guidelines/ Cloned C++ Performance Guidelines corpus repository
   rust-api-guidelines/ Cloned rust-lang/api-guidelines repository
   nodejs-guidelines/  Cloned nodebestpractices repository
   lancedb/           LanceDB vector database files
@@ -55,6 +57,13 @@ git clone https://github.com/rust-lang/api-guidelines.git data/rust-api-guidelin
 git clone https://github.com/goldbergyoni/nodebestpractices.git data/nodejs-guidelines
 ```
 
+The `cpp-perf-guidelines` corpus is a self-authored companion repository (not a
+third-party upstream). Clone it into the data directory as well:
+
+```sh
+git clone https://github.com/plainsight-systems/cpp-perf-guidelines.git data/cpp-perf-guidelines
+```
+
 If a target directory already exists and is not empty, remove it first or update it in place:
 
 ```sh
@@ -81,6 +90,7 @@ cargo build
 - `cargo build` -- build all crates
 - `cargo test` -- run all tests
 - `cargo run -p cpp-guidelines` -- run the C++ Guidelines MCP server
+- `cargo run -p cpp-perf-guidelines` -- run the C++ Performance Guidelines MCP server
 - `cargo run -p rust-api-guidelines` -- run the Rust API Guidelines MCP server
 - `cargo run -p llm-proxy` -- run the local LLM proxy MCP server
 - `cargo run -p nodejs-guidelines` -- run the Node.js Best Practices MCP server
@@ -101,6 +111,7 @@ The MCP servers listen over TCP inside Docker when `MCP_TCP_LISTEN_ADDR` is set:
 - `rust-api-guidelines`: `localhost:7012`
 - `nodejs-guidelines`: `localhost:7013`
 - `llm-proxy`: `localhost:7014`
+- `cpp-perf-guidelines`: `localhost:7015`
 
 All services are attached to a shared Docker network named `mcp` so they can reach Redis at `redis:6379`.
 
@@ -163,6 +174,26 @@ The `nodejs-guidelines` server exposes the following MCP tools.
   - Output: JSON object `{ id, anchor, title, category, source_file, raw_markdown }`
 - `list_category`
   - Input: `{ "category": string }` (for example `1`, `2`, `3`)
+  - Output: JSON object `{ category: { key, display_name, guideline_count }, guidelines: [{ id, title }] }`
+- `update_guidelines`
+  - Input: none
+  - Output: JSON object `{ updated, commit, guideline_count }`
+
+## C++ Performance Guidelines MCP Tools
+
+The `cpp-perf-guidelines` server exposes a corpus of low-level C++ performance
+guidelines (custom allocators, data layout and cache behavior, copy/move
+discipline, object lifetime, embedded constraints, concurrency memory effects,
+and codegen) — the technique layer below the ISO C++ Core Guidelines.
+
+- `search_guidelines`
+  - Input: `{ "query": string, "limit"?: number }` (`limit` defaults to 10, max 50)
+  - Output: JSON object `{ results: [{ id, title, category, score, summary }] }`
+- `get_guideline`
+  - Input: `{ "guideline_id": string }` (for example `MEM.1`, `CACHE.1`)
+  - Output: JSON object `{ id, anchor, title, category, raw_markdown, sections, source_file }`
+- `list_category`
+  - Input: `{ "category": string }` (for example `memory`, `cache-layout`, `codegen`)
   - Output: JSON object `{ category: { key, display_name, guideline_count }, guidelines: [{ id, title }] }`
 - `update_guidelines`
   - Input: none

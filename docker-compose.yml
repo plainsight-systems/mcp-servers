@@ -37,6 +37,29 @@ services:
       - mcp
     restart: unless-stopped
 
+  cpp-perf-guidelines:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BIN: cpp-perf-guidelines
+    environment:
+      REDIS_URL: redis://redis:6379
+      LANCEDB_PATH: /app/data/lancedb
+      CPP_PERF_GUIDELINES_REPO_PATH: /app/data/cpp-perf-guidelines
+      MCP_LISTEN_ADDR: 0.0.0.0:7015
+    volumes:
+      - ./data:/app/data
+      - mcp-model-cache:/root/.cache
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "7015:7015"
+    networks:
+      - mcp
+    restart: unless-stopped
+
   rust-api-guidelines:
     build:
       context: .

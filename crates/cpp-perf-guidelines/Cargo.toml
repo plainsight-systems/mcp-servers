@@ -1,0 +1,26 @@
+[package]
+name = "cpp-perf-guidelines"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[[bin]]
+name = "cpp-perf-guidelines"
+path = "src/main.rs"
+
+[dependencies]
+mcp-common = { path = "../mcp-common" }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+sha2 = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+arrow-array = { workspace = true }
+arrow-schema = { workspace = true }
+rmcp = { version = "0.14", features = ["server", "transport-io", "transport-streamable-http-server"] }
+axum = { workspace = true }
+schemars = "0.8"
+toml = "0.8"

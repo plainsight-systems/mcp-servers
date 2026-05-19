@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "crates/mcp-common",
     "crates/cpp-guidelines",
+    "crates/cpp-perf-guidelines",
     "crates/rust-api-guidelines",
     "crates/llm-proxy",
     "crates/nodejs-guidelines",
