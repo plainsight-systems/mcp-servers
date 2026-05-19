@@ -201,4 +201,10 @@ and codegen) — the technique layer below the ISO C++ Core Guidelines.
 
 ## License
 
-MIT
+This repository is dual-licensed, following the Plainsight Systems licensing
+doctrine:
+
+- **Code** — the Rust crates and any scripts or tooling — is licensed under the
+  [Apache License 2.0](LICENSE-APACHE).
+- **Content** — documentation and written copy — is licensed under
+  [Creative Commons Attribution 4.0 International](LICENSE-CC-BY) (CC BY 4.0).
