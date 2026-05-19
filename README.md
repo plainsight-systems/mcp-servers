@@ -3,6 +3,10 @@
 Rust workspace for Model Context Protocol (MCP) servers powering the AI Workbench.
 The goal is to improve client productivity by giving agents direct access to trusted best-practice knowledge.
 
+- **Parent entity:** Plainsight Systems LLC — parent-org infrastructure (no operating brand).
+- **Maturity:** active development.
+- **Governance:** built to the [Plainsight Systems engineering philosophy](https://github.com/plainsight-systems/.github/blob/main/engineering_philosophies.md). To contribute, see [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
 ## Workspace Structure
 
 ```
