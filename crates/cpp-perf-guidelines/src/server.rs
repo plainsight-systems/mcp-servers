@@ -92,7 +92,7 @@ impl CppPerfGuidelinesServer {
 #[tool_router]
 impl CppPerfGuidelinesServer {
     #[tool(
-        description = "Search the low-level C++ performance guidelines (custom allocators, data layout, cache behavior, copy/move discipline, object lifetime, embedded constraints, concurrency memory effects, codegen) by semantic similarity. Returns ranked results."
+        description = "Search the low-level C++ performance guidelines (custom allocators, data layout, cache behavior, copy/move discipline, object lifetime, embedded constraints, concurrency memory effects, codegen, SIMD and vectorization) by semantic similarity. Returns ranked results."
     )]
     async fn search_guidelines(
         &self,
@@ -155,7 +155,7 @@ impl CppPerfGuidelinesServer {
     }
 
     #[tool(
-        description = "List all C++ performance guidelines in a category. Categories: 'memory', 'copy-move', 'cache-layout', 'lifetime', 'embedded', 'concurrency', 'codegen'."
+        description = "List all C++ performance guidelines in a category. Categories: 'memory', 'copy-move', 'cache-layout', 'lifetime', 'embedded', 'concurrency', 'codegen', 'simd'."
     )]
     async fn list_category(
         &self,
@@ -283,10 +283,10 @@ impl ServerHandler for CppPerfGuidelinesServer {
                 "Low-level C++ performance guidelines MCP server. Curated technique-level \
                  guidance on custom allocators, data layout and cache behavior, copy/move \
                  discipline, object lifetime, embedded constraints, concurrency memory \
-                 effects, and codegen — the layer below the ISO C++ Core Guidelines. Use \
-                 search_guidelines for natural-language queries, get_guideline for lookup \
-                 by ID (e.g. MEM.1), list_category to browse a category, and \
-                 update_guidelines to refresh from the repository."
+                 effects, codegen, and SIMD/vectorization — the layer below the ISO C++ \
+                 Core Guidelines. Use search_guidelines for natural-language queries, \
+                 get_guideline for lookup by ID (e.g. MEM.1), list_category to browse a \
+                 category, and update_guidelines to refresh from the repository."
                     .to_string(),
             ),
         }
