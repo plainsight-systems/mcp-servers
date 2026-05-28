@@ -188,8 +188,8 @@ The `nodejs-guidelines` server exposes the following MCP tools.
 The `cpp-perf-guidelines` server exposes a corpus of low-level C++ performance
 guidelines (custom allocators, data layout and cache behavior, copy/move
 discipline, object lifetime, embedded constraints, concurrency memory effects,
-codegen, and SIMD/vectorization) — the technique layer below the ISO C++ Core
-Guidelines.
+codegen, SIMD/vectorization, and telemetry/observability harnesses) — the
+technique layer below the ISO C++ Core Guidelines.
 
 - `search_guidelines`
   - Input: `{ "query": string, "limit"?: number }` (`limit` defaults to 10, max 50)
@@ -198,7 +198,7 @@ Guidelines.
   - Input: `{ "guideline_id": string }` (for example `MEM.1`, `CACHE.1`)
   - Output: JSON object `{ id, anchor, title, category, raw_markdown, sections, source_file }`
 - `list_category`
-  - Input: `{ "category": string }` (for example `memory`, `cache-layout`, `codegen`, `simd`)
+  - Input: `{ "category": string }` (for example `memory`, `cache-layout`, `codegen`, `simd`, `telemetry`)
   - Output: JSON object `{ category: { key, display_name, guideline_count }, guidelines: [{ id, title }] }`
 - `update_guidelines`
   - Input: none
