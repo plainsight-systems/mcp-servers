@@ -451,7 +451,7 @@ Stays inside Guidance.
             return;
         }
         let (guidelines, categories) = parse_corpus(&repo).expect("corpus parses");
-        assert_eq!(categories.len(), 8, "expected 8 declared categories");
+        assert_eq!(categories.len(), 9, "expected 9 declared categories");
         for g in &guidelines {
             assert!(
                 categories.contains_key(&g.category),
