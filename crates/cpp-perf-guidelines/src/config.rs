@@ -12,6 +12,9 @@ pub struct Config {
     pub lancedb_path: String,
     /// Filesystem path to the cloned cpp-perf-guidelines corpus repository.
     pub repo_path: String,
+    /// Whether `update_*` fetches and fast-forwards the clone before
+    /// re-indexing. Disable for pinned or air-gapped deployments.
+    pub repo_auto_pull: bool,
 }
 
 impl Config {
@@ -19,6 +22,8 @@ impl Config {
     ///
     /// Required:
     /// - `LANCEDB_PATH`: path to LanceDB data directory
+    /// - `CPP_PERF_GUIDELINES_REPO_AUTO_PULL`: set to 0/false/no/off to stop
+    ///   `update_*` fetching from the remote (default: enabled)
     /// - `CPP_PERF_GUIDELINES_REPO_PATH`: path to the cloned corpus repo
     ///
     /// Optional:
@@ -52,10 +57,14 @@ impl Config {
 
         let redis_url = std::env::var("REDIS_URL").ok();
 
+        let repo_auto_pull =
+            mcp_common::git::auto_pull_from_env("CPP_PERF_GUIDELINES_REPO_AUTO_PULL");
+
         Ok(Self {
             redis_url,
             lancedb_path,
             repo_path,
+            repo_auto_pull,
         })
     }
 

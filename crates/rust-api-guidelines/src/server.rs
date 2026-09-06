@@ -215,6 +215,7 @@ impl RustApiGuidelinesServer {
         let response = UpdateGuidelinesResponse {
             updated: result.updated,
             commit: result.commit,
+            remote_sync: result.remote_sync,
             guideline_count: if result.updated {
                 result.guideline_count
             } else {

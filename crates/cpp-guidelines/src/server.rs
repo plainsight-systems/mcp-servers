@@ -201,7 +201,7 @@ impl CppGuidelinesServer {
         Ok(Json(response))
     }
 
-    #[tool(description = "Trigger a re-index of the C++ Core Guidelines from the git repository. Checks for updates and re-parses/re-embeds if the content has changed.")]
+    #[tool(description = "Fetch the latest C++ Core Guidelines from the remote repository and re-index if the content changed. Fast-forwards the local clone first; if the remote cannot be reached, re-indexes local content and reports that in remote_sync.")]
     async fn update_guidelines(&self) -> Result<Json<UpdateGuidelinesResponse>, String> {
         info!("update_guidelines tool invoked");
 
@@ -228,6 +228,7 @@ impl CppGuidelinesServer {
         let response = UpdateGuidelinesResponse {
             updated: result.updated,
             commit: result.commit,
+            remote_sync: result.remote_sync,
             guideline_count: if result.updated {
                 result.guideline_count
             } else {

@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use arrow_array::{ArrayRef, FixedSizeListArray, Float32Array, RecordBatch, StringArray};
 use arrow_schema::{DataType, Field, Schema};
-use tracing::info;
+use tracing::{info, warn};
 
 use crate::cache::GuidelineCache;
 use crate::config::Config;
@@ -29,6 +29,9 @@ pub struct UpdateResult {
     pub commit: String,
     /// Number of guidelines after the update.
     pub guideline_count: usize,
+    /// What happened at the remote before this update. Reported so a
+    /// caller can tell "already current" from "never looked".
+    pub remote_sync: String,
 }
 
 pub struct UpdateService {
@@ -55,19 +58,20 @@ impl UpdateService {
 
     /// Get the current git HEAD commit hash from the corpus repository.
     pub fn get_repo_commit(&self) -> Result<String, AppError> {
-        let output = std::process::Command::new("git")
-            .arg("rev-parse")
-            .arg("HEAD")
-            .current_dir(&self.config.repo_path)
-            .output()
-            .map_err(|e| AppError::Git(format!("failed to run git rev-parse: {e}")))?;
+        mcp_common::git::head_commit(&self.config.repo_path)
+            .map_err(|e| AppError::Git(e.to_string()))
+    }
 
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(AppError::Git(format!("git rev-parse failed: {stderr}")));
+    /// Fetch and fast-forward the corpus clone.
+    ///
+    /// Never fails the update: a remote that cannot be reached leaves the
+    /// clone alone and returns an outcome the caller reports, so a stale
+    /// index is visible rather than silent.
+    fn sync_repo(&self) -> mcp_common::git::SyncOutcome {
+        match mcp_common::git::sync(&self.config.repo_path, self.config.repo_auto_pull) {
+            Ok(outcome) => outcome,
+            Err(e) => mcp_common::git::SyncOutcome::Failed(e.to_string()),
         }
-
-        Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
     }
 
     /// Check if an update is needed by comparing the current commit with the
@@ -155,6 +159,16 @@ impl UpdateService {
     pub async fn update(
         &self,
     ) -> Result<(UpdateResult, Option<(Vec<Guideline>, HashMap<String, Category>)>), AppError> {
+        // Contact the remote BEFORE reading HEAD. Reading first was the whole
+        // defect: the commit check compared the clone against itself.
+        let sync = self.sync_repo();
+        match &sync {
+            mcp_common::git::SyncOutcome::Failed(reason) => {
+                warn!(%reason, "remote sync failed; serving local content")
+            }
+            outcome => info!(sync = %outcome, "repository sync"),
+        }
+
         let current_commit = self.get_repo_commit()?;
 
         if !self.needs_update().await? {
@@ -164,6 +178,7 @@ impl UpdateService {
                     updated: false,
                     commit: current_commit,
                     guideline_count: 0, // caller uses the existing count
+                    remote_sync: sync.to_string(),
                 },
                 None,
             ));
@@ -177,6 +192,7 @@ impl UpdateService {
                 updated: true,
                 commit,
                 guideline_count: count,
+                remote_sync: sync.to_string(),
             },
             Some((guidelines, categories)),
         ))

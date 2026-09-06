@@ -7,6 +7,9 @@ pub struct Config {
     pub redis_url: Option<String>,
     pub lancedb_path: String,
     pub repo_path: String,
+    /// Whether `update_*` fetches and fast-forwards the clone before
+    /// re-indexing. Disable for pinned or air-gapped deployments.
+    pub repo_auto_pull: bool,
     pub readme_rel_path: String,
 }
 
@@ -47,10 +50,14 @@ impl Config {
             }
         }
 
+        let repo_auto_pull =
+            mcp_common::git::auto_pull_from_env("NODEJS_GUIDELINES_REPO_AUTO_PULL");
+
         Ok(Self {
             redis_url: std::env::var("REDIS_URL").ok(),
             lancedb_path,
             repo_path: resolved_repo_path,
+            repo_auto_pull,
             readme_rel_path,
         })
     }

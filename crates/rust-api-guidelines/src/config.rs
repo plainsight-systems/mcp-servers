@@ -11,11 +11,16 @@ pub struct Config {
     pub lancedb_path: String,
     /// Filesystem path to the cloned Rust API Guidelines repository.
     pub repo_path: String,
+    /// Whether `update_*` fetches and fast-forwards the clone before
+    /// re-indexing. Disable for pinned or air-gapped deployments.
+    pub repo_auto_pull: bool,
 }
 
 impl Config {
     /// Required:
     /// - `LANCEDB_PATH`: path to LanceDB data directory
+    /// - `RUST_API_GUIDELINES_REPO_AUTO_PULL`: set to 0/false/no/off to stop
+    ///   `update_*` fetching from the remote (default: enabled)
     /// - `RUST_API_GUIDELINES_REPO_PATH`: path to the cloned rust-lang/api-guidelines repo
     ///
     /// Optional:
@@ -45,10 +50,14 @@ impl Config {
             }
         }
 
+        let repo_auto_pull =
+            mcp_common::git::auto_pull_from_env("RUST_API_GUIDELINES_REPO_AUTO_PULL");
+
         Ok(Self {
             redis_url: std::env::var("REDIS_URL").ok(),
             lancedb_path,
             repo_path,
+            repo_auto_pull,
         })
     }
 

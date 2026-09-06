@@ -451,7 +451,24 @@ Stays inside Guidance.
             return;
         }
         let (guidelines, categories) = parse_corpus(&repo).expect("corpus parses");
-        assert_eq!(categories.len(), 9, "expected 9 declared categories");
+
+        // Compare against what categories.toml actually declares rather than a
+        // literal. The literal has already been bumped twice as the corpus grew
+        // (8 -> 9 -> 11), which tested the maintainer's diligence rather than
+        // the parser. This asserts the property that was meant: the parser sees
+        // every declared category and invents none.
+        let declared = std::fs::read_to_string(repo.join("categories.toml"))
+            .expect("categories.toml is readable")
+            .lines()
+            .filter(|l| l.trim() == "[[category]]")
+            .count();
+        assert_eq!(
+            categories.len(),
+            declared,
+            "parser found {} categories; categories.toml declares {}",
+            categories.len(),
+            declared
+        );
         for g in &guidelines {
             assert!(
                 categories.contains_key(&g.category),

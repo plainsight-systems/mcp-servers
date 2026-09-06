@@ -23,6 +23,15 @@ This project is built to the Plainsight Systems engineering philosophy:
 
 - None yet.
 
+## Locked Decisions Added 2026-09-06
+
+- **`update_*` fetches before it reports.** The tools previously re-indexed
+  whatever was on disk and never contacted the remote, so a server could serve
+  a stale corpus while returning success. Fetch-then-check is the contract, and
+  the response carries `remote_sync` so "already current" is distinguishable
+  from "never looked". Fast-forward only: a diverged, detached or upstream-less
+  clone is reported, never rewritten.
+
 ## Active Workflow Pointers
 
 - Queue: `QUEUE.md`

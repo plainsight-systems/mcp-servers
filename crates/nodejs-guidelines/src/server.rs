@@ -221,6 +221,7 @@ impl NodejsGuidelinesServer {
             updated: result.updated,
             commit: result.commit,
             guideline_count,
+            remote_sync: result.remote_sync,
         }))
     }
 }

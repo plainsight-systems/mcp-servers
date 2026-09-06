@@ -75,7 +75,16 @@ pub struct CategoryListResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct UpdateGuidelinesResponse {
+    /// Whether a re-index occurred.
     pub updated: bool,
+    /// The commit the index now reflects.
     pub commit: String,
     pub guideline_count: usize,
+    /// What happened at the remote before the commit check: fast-forwarded,
+    /// already current, disabled, skipped, or a stated failure.
+    ///
+    /// Present so a caller can distinguish "already up to date" from "never
+    /// contacted the remote". Without it, a server that cannot reach origin
+    /// reports success indistinguishable from a genuine no-op.
+    pub remote_sync: String,
 }

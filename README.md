@@ -133,8 +133,61 @@ The `rust-api-guidelines` server exposes the following MCP tools.
   - Input: `{ "category": string }` (for example `Naming`, `Documentation`)
   - Output: JSON object `{ category: { key, display_name, guideline_count }, guidelines: [{ id, title }] }`
 - `update_guidelines`
+  - Fetches the corpus repository and fast-forwards the local clone, then
+    re-indexes if the commit changed. See
+    [Updating a corpus](#updating-a-corpus).
   - Input: none
-  - Output: JSON object `{ updated, commit, guideline_count }`
+  - Output: JSON object `{ updated, commit, guideline_count, remote_sync }`
+
+## Updating a corpus
+
+Each guideline server indexes a local clone of its corpus repository, mounted
+into the container (see `docker-compose.yml`). The `update_*` tool keeps that
+clone current:
+
+1. Fetch the clone's upstream and **fast-forward** onto it.
+2. Compare the resulting `HEAD` with the commit the index was built from.
+3. Re-parse, re-embed and re-index only if the commit changed.
+
+Step 1 is fast-forward only. The clone is never reset, rebased or
+force-updated, and local modifications are never discarded. A clone that has
+diverged, is on a detached HEAD, or has no configured upstream is left exactly
+as it is and the situation is reported.
+
+### `remote_sync`
+
+The update response reports what happened at the remote, separately from
+whether a re-index occurred:
+
+| Value | Meaning |
+|---|---|
+| `fast-forwarded <from>..<to>` | The remote had new commits; the clone advanced |
+| `already current with remote` | The remote was reached; the clone matched it |
+| `auto-pull disabled` | Switched off by configuration |
+| `skipped: <reason>` | No upstream, or a detached HEAD — a pinned clone |
+| `failed: <reason>` | The remote could not be reached, or the clone could not be fast-forwarded |
+
+A `failed` sync does **not** fail the update. The server re-indexes the local
+content and reports the failure, so an index that is behind the remote is
+visible rather than silent. `updated: false` with
+`remote_sync: "already current with remote"` means genuinely up to date;
+`updated: false` with a `failed` sync means the answer is unknown.
+
+### Disabling the fetch
+
+Set `<SERVER>_REPO_AUTO_PULL` to `0`, `false`, `no` or `off` to pin a clone —
+useful for air-gapped deployments or when an operator wants a specific commit
+served. Any other value, or the variable being absent, leaves fetching enabled.
+
+```
+CPP_GUIDELINES_REPO_AUTO_PULL=0
+CPP_PERF_GUIDELINES_REPO_AUTO_PULL=0
+NODEJS_GUIDELINES_REPO_AUTO_PULL=0
+RUST_API_GUIDELINES_REPO_AUTO_PULL=0
+```
+
+Note that a detached HEAD is already treated as a pin, so checking out a
+specific commit in the clone achieves the same thing without configuration.
 
 ## LLM Proxy MCP Tools
 
@@ -180,8 +233,11 @@ The `nodejs-guidelines` server exposes the following MCP tools.
   - Input: `{ "category": string }` (for example `1`, `2`, `3`)
   - Output: JSON object `{ category: { key, display_name, guideline_count }, guidelines: [{ id, title }] }`
 - `update_guidelines`
+  - Fetches the corpus repository and fast-forwards the local clone, then
+    re-indexes if the commit changed. See
+    [Updating a corpus](#updating-a-corpus).
   - Input: none
-  - Output: JSON object `{ updated, commit, guideline_count }`
+  - Output: JSON object `{ updated, commit, guideline_count, remote_sync }`
 
 ## C++ Performance Guidelines MCP Tools
 
@@ -201,8 +257,11 @@ technique layer below the ISO C++ Core Guidelines.
   - Input: `{ "category": string }` (for example `memory`, `cache-layout`, `codegen`, `simd`, `telemetry`)
   - Output: JSON object `{ category: { key, display_name, guideline_count }, guidelines: [{ id, title }] }`
 - `update_guidelines`
+  - Fetches the corpus repository and fast-forwards the local clone, then
+    re-indexes if the commit changed. See
+    [Updating a corpus](#updating-a-corpus).
   - Input: none
-  - Output: JSON object `{ updated, commit, guideline_count }`
+  - Output: JSON object `{ updated, commit, guideline_count, remote_sync }`
 
 ## License
 
